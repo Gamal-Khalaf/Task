@@ -1,0 +1,7 @@
+#! bin/bash
+
+echo "Write the directory"
+read Dir
+printf "\n"
+
+ls -l $Dir

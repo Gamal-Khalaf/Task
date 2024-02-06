@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# Check if the password length is provided as an argument
+if [[ $# -eq 0 ]]; then
+    echo "Usage: $0 <password_length> [complexity] => as -u for upper case , -l for lower case , -d for digits and -s for special characters "
+    exit 1
+fi
+
+# Store the password length provided as an argument
+password_length=$1
+
+# Default complexity criteria
+uppercase=false
+lowercase=false
+digits=false
+special_chars=false
+
+# Check if complexity criteria are specified as arguments
+if [[ $# -gt 1 ]]; then
+    # Loop through the arguments and set the complexity criteria flags
+    for arg in "${@:2}"; do
+        case "$arg" in
+            -u|--uppercase)
+                uppercase=true
+                ;;
+            -l|--lowercase)
+                lowercase=true
+                ;;
+            -d|--digits)
+                digits=true
+                ;;
+            -s|--special-chars)
+                special_chars=true
+                ;;
+            *)
+                echo "Invalid complexity criteria: $arg"
+                exit 1
+                ;;
+        esac
+    done
+fi
+
+# Define character sets based on complexity criteria
+charset=""
+if $uppercase; then
+    charset+="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+fi
+if $lowercase; then
+    charset+="abcdefghijklmnopqrstuvwxyz"
+fi
+if $digits; then
+    charset+="0123456789"
+fi
+if $special_chars; then
+    charset+="!@#$%^&*()-_+=~[]{}<>?/|"
+fi
+
+# Check if at least one complexity criteria is specified
+if [[ ${#charset} -eq 0 ]]; then
+    echo "Please specify at least one complexity criteria."
+    exit 1
+fi
+
+# Generate the random password
+password=""
+for (( i=0; i<password_length; i++ )); do
+    password+=${charset:RANDOM%${#charset}:1}
+done
+
+echo "Generated Password: $password"

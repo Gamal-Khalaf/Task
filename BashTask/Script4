@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Check if the directory path is provided as an argument
+if [[ $# -eq 0 ]]; then
+    echo "You must write a directory name!"
+    exit 1
+fi
+
+directory=$1
+
+# Ensure the specified directory exists
+if [[ ! -d $directory ]]; then
+    echo "Error: Directory '$directory' does not exist."
+    exit 1
+fi
+
+for file in "$directory"/*; do
+    if [[ -f $file ]]; then
+        echo "-------------------------------------------------"
+        echo "File: $file"
+
+        # Extract and display metadata based on file type
+        case "$file" in
+            *.txt)
+                echo "File type: Text file"
+                ;;
+            *.jpg|*.png)
+                echo "File type: image"
+                ;;
+            *.pdf)
+                echo "File type: PDF document"
+                ;;
+            *.sh)
+                echo "File type: Script file"
+                ;;
+            *.zip)
+                echo "File type: Compressed file"
+                ;;
+            *.doc)
+                echo "File type: Word document"
+                ;;
+            *)
+                echo "File type: Unknown"
+                ;;
+        esac
+
+    fi
+done

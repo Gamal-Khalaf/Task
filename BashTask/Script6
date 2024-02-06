@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Check if the input file and number of iterations are provided as arguments
+if [[ $# -ne 2 ]]; then
+    echo "Usage: $0 <input_file> <iterations>"
+    exit 1
+fi
+
+# Store the input file and number of iterations provided as arguments
+input_file=$1
+iterations=$2
+
+# Ensure the input file exists
+if [[ ! -f $input_file ]]; then
+    echo "Error: Input file '$input_file' does not exist."
+    exit 1
+fi
+
+# Initialize an array to store the unique subdomains
+declare -A subdomains
+
+# Read the domains from the input file
+while IFS= read -r domain; do
+    # Perform subdomain enumeration using multiple tools
+    for (( i=1; i<=iterations; i++ )); do
+        # Append the iteration number to the domain
+        if [[ $i -gt 1 ]]; then
+            domain="${domain%.*}.$i.${domain#*.}"
+        fi
+
+        # Tool 1: amass
+        amass_output=$(amass enum -d "$domain")
+
+        # Tool 2: sublist3r
+        sublist3r_output=$(sublist3r -d "$domain")
+
+        # Tool 3: subfinder
+        subfinder=$(subfinder -d "$domain")
+
+        # Extract subdomains from the output of each tool
+        subdomains+=($(echo "$amass_output" | grep -Eo '[^.]+\.'"$domain"''))
+        subdomains+=($(echo "$sublist3r_output" | grep -Eo '[^.]+\.'"$domain"''))
+        subdomains+=($(echo "$subfinder" | grep -Eo '[^.]+\.'"$domain"''))
+    done
+done < "$input_file"
+
+# Save the unique subdomains to a file
+output_file="subdomains.txt"
+printf '%s\n' "${subdomains[@]}" | sort -u > "$output_file"
+
+# Count the number of unique subdomains
+count=$(wc -l < "$output_file")
+
+echo "Subdomains saved to '$output_file'."
+echo "Total unique subdomains found: $count"

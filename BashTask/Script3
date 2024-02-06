@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Connect using Warp and check assigned IP
+echo "Connecting to Warp..."
+warp-cli connect
+
+# Check if an IP has been assigned
+ip=$(ifconfig | grep inet | head -n1 | cut -d't' -f2 |  cut -d" " -f2)
+if [ -z "$ip" ]; then
+  echo "Failed to connect to Warp. Exiting..."
+  exit 1
+fi
+echo "Warp connected. Assigned IP: $ip"
+
+# Connect using OpenVPN in the background
+echo "Connecting to OpenVPN..."
+openvpn --config /path/to/openvpn-config.ovpn --daemon
+
+# Second check - Ping 10.10.10.10
+echo "Pinging 10.10.10.10..."
+ping -c 3 10.10.10.10
+
+# Disconnect from Warp
+echo "Disconnecting from Warp..."
+warp-cli disconnect
+echo "VPN connection completed."
